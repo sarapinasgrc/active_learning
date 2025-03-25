@@ -2,19 +2,33 @@
 
 ## 📂 Repository Structure 
 📁 data/
+
 │── arcene_df.xlsx           # Original MALDI-TOF (Arcene) dataset
+
 │── binary_data.xlsx         # Generated binary dataset
+
 │── multiclass_data.xlsx     # Generated multiclass dataset
+
 📁 src/
+
 │── 📁 utils/
+
 │   │── active_loop.py       # Main Active Learning loop
+
 │   │── initialization.py    # Initialization methods
+
 │   │── models.py            # Classification models
+
 │   │── preprocessing.py     # Data preprocessing
+
 │   │── selection.py         # Data selection strategies
+
 │   │── main.py              # Active Learning execution
+
 │── baselines.py             # Random model comparisons
+
 │ requirements.txt           # Required dependencies
+
 README.md                    # This file
 
 ## 📊 Implemented Methods  
