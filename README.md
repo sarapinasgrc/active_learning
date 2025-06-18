@@ -40,7 +40,7 @@ README.md                    # This file
 ### Active Learning Strategies  
 - **Coreset**: Selects the most representative samples by entropy + euclidean distance.  
 - **Entropy**: Selects samples with the highest uncertainty, calculated by entropy.  
-- **Uncertainty Distance**: Combines uncertainty and euclidean distance.  
+- **Uncertainty Distance**: Combines least uncertainty and euclidean distance.  
 
 ### Implemented Models  
 - **Transductive SVM (TSVM)**, for binary and multiclass classification 
