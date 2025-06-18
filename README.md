@@ -33,12 +33,13 @@
 
 README.md                            # This file
 
+---
 ## 📊 Implemented Methods  
 
 ### Initial Selection Methods 🎯
 - **Minimum Distance**: Selects samples by maximizing the minimum distance between labeled and unlabeled samples.  
 - **Mean Distance**: Selects samples by maximizing the mean distance between labeled and unlabeled samples.
-- 
+
 ### Active Learning Strategies 🔍
 - **Coreset**: Selects the most representative samples by entropy + euclidean distance.  
 - **Entropy**: Selects samples with the highest uncertainty, calculated by entropy.  
