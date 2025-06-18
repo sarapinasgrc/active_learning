@@ -1,11 +1,13 @@
 import numpy as np
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.metrics.pairwise import euclidean_distances 
-from models import define_model, TSVM
+from models import define_model, TSVM, MultiClassTSVM
 from scipy.stats import entropy
+from sklearn.preprocessing import label_binarize
+from utils.stopping_criteria import MU_stopping, OU_stopping, MEE_stopping
+from sklearn.metrics import pairwise_distances
 
-
-def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='coreset', kernel='linear'):
+def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='coreset', kernel='linear', threshold=0.15):
     """
     Active learning loop
     
@@ -30,10 +32,12 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
     accuracy_list = []
     auc_list = []
     iteration = 0
+    mu, ou, mee,  = False, False, False
+    point_mu, point_ou, point_mee, point_change = -1, -1, -1, -1
 
     while len(X_pool) > 0:
 
-        if isinstance(model, TSVM):
+        if isinstance(model, (TSVM, MultiClassTSVM)):
             model.fit(X_labeled, y_labeled, X_pool)
         else:
             model.fit(X_labeled, y_labeled)
@@ -46,7 +50,13 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
             y_pred_proba_test = model.predict_proba(X_test)[:, 1]
 
         accuracy = accuracy_score(y_test, y_test_pred)
-        auc = roc_auc_score(y_test, y_pred_proba_test)
+
+        if len(np.unique(y_test)) > 2:
+            y_test_bin = label_binarize(y_test, classes=np.unique(y_test))
+            auc = roc_auc_score(y_test_bin, y_pred_proba_test, multi_class='ovr')
+        else:
+            auc = roc_auc_score(y_test, y_pred_proba_test[:, 1])
+
         accuracy_list.append(accuracy)
         auc_list.append(auc)
 
@@ -54,6 +64,22 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
             probs = model.predict_proba(X_pool, Transductive=False)
         else: 
             probs = model.predict_proba(X_pool)
+
+        if iteration > 1:
+          if not mu:
+              mu = MU_stopping(probs, threshold=threshold)
+              if mu: 
+                  point_mu = iteration
+          
+          if not ou:
+              ou = OU_stopping(probs, threshold=threshold)
+              if ou:
+                  point_ou = iteration
+              
+          if not mee:
+              mee = MEE_stopping(probs, X_pool, threshold=threshold)
+              if mee:
+                  point_mee = iteration
 
         if al == 'coreset':
           entropies = entropy(probs, axis=1)
@@ -86,6 +112,27 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
           scaled_dists = dists * uncertainties.reshape(-1, 1)
           min_scaled_dist = np.min(scaled_dists, axis=1)
           next_idx = np.argmax(min_scaled_dist)
+
+        elif al == 'support':
+            if isinstance(model, (TSVM, MultiClassTSVM)):
+                support_vectors = model.support_vectors_
+                support_indices = [
+                    i for i, x in enumerate(X_pool)
+                    if any(np.allclose(x, sv, atol=1e-6) for sv in support_vectors)
+                ]
+                
+                if support_indices:
+                    next_idx = support_indices[0]
+
+                else:
+                    entropies = entropy(probs, axis=1)
+                    dists = pairwise_distances(X_pool, X_labeled, metric="euclidean")
+                    scaled_dists = dists * entropies[:, None]
+                    min_scaled_dist = np.min(scaled_dists, axis=1)
+                    next_idx = np.argmax(min_scaled_dist)
+            else:
+                raise ValueError("The 'support' strategy requires a TSVM model.")
+
 
         X_labeled = np.vstack([X_labeled, X_pool[next_idx]])
         y_labeled = np.append(y_labeled, y_pool[next_idx])
