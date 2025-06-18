@@ -1,5 +1,6 @@
 # Active Learning for Classification
 
+---
 ## 📂 Repository Structure 
 📁 data/
 
