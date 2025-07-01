@@ -21,6 +21,8 @@
 
 ││       │── preprocessing.py             # Data preprocessing
 
+││       │── prueba.py                    # Code to see how the functions can be used
+
 ││       │── selection.py                 # Data selection strategies that are integrated into the active learning loop for initial selection within the loop in main.py
 
 ││       │── stopping_criteria.py         # Stopping criteria strategies
