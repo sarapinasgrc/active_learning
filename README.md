@@ -13,17 +13,17 @@
 
 │   │── 📁 utils/
 
-│       │── active_loop.py               # Main Active Learning loop
+││       │── active_loop.py               # Main Active Learning loop
 
-│       │── initialization.py            # Initialization methods
+││       │── initialization.py            # Initialization methods
 
-│       │── models.py                    # Classification models
+││       │── models.py                    # Classification models
 
-│       │── preprocessing.py             # Data preprocessing
+││       │── preprocessing.py             # Data preprocessing
 
-│       │── selection.py                 # Data selection strategies that are integrated into the active learning loop for initial selection within the loop in main.py
+││       │── selection.py                 # Data selection strategies that are integrated into the active learning loop for initial selection within the loop in main.py
 
-│       │── stopping_criteria.py         # Stopping criteria strategies
+││       │── stopping_criteria.py         # Stopping criteria strategies
 
 │   │── main.py                      # Active Learning execution
 
