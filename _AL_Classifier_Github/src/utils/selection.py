@@ -1,6 +1,9 @@
 from sklearn.metrics.pairwise import euclidean_distances
 import numpy as np
 
+# Same logic as the initialization functions, but integrated in the active learning loop. Needs beforehand the amount of samples to select.
+# I implemented the elbow detection method only on the initialization.py file.
+
 def minimum_distance(X_unlabeled, y_unlabeled, X_initial, y_initial, n_samples=1):
   '''
   Selects the maximum minimum distance point from the unlabeled set at each iteration.

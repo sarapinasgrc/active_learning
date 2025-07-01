@@ -135,73 +135,20 @@ def initialization_minimum(X_unlabeled, X_initial=None):
     """
 
     distance_differences = []
+    selected_indices = []
 
     if X_initial is None or len(X_initial) == 0:
         X_initial = []
 
     iteration = 0
 
-    initial_distances = []
-    if len(X_initial) > 1:
-        mean_point = np.mean(X_initial, axis=0)
-        initial_idx = np.argmin(np.linalg.norm(X_initial - mean_point, axis=1))
-        print(f"Initial index: {initial_idx}")
-        X_aux = [X_initial[initial_idx]]
-        X_rest = np.delete(X_initial, initial_idx, axis=0)
-        while len(X_rest) > 0: 
-            print(f"X_aux: {X_aux}")
-            print(f"len(X_rest): {len(X_rest)}") 
-            print(f"len(X_aux): {len(X_aux)}")    
-            
-            aux = []
-            for i, x in enumerate(X_rest):
-                distances = euclidean_distances([x], X_aux)
-                min_distance = np.partition(distances, 1)[0,1] if np.min(distances) == 0 else np.min(distances)
-                aux.append((i, min_distance))
-
-            best_idx, best_min_distance = max(aux, key=lambda x: x[1])
-            print(f"Best min distance: {best_min_distance}")
-
-            initial_distances.append(best_min_distance)
-    
-            X_aux = np.vstack([X_aux, X_rest[best_idx]])
-            mask = np.ones(len(X_rest), dtype=bool)
-            mask[best_idx] = False
-            X_rest = X_rest[mask]
-    
-
-    X_whole = np.vstack([X_initial, X_unlabeled])
-    mean_point = np.mean(X_whole, axis=0)
-    initial_idx = np.argmin(np.linalg.norm(X_whole - mean_point, axis=1))
-    X_all = [X_whole[initial_idx]]
-
-    mask = np.ones(len(X_whole), dtype=bool)
-    mask[initial_idx] = False
-    X_whole = X_whole[mask]
-    distance_differences_whole = []
-    while len(X_whole) > 0:
-
-      min_distances_whole = []
-      for i, x in enumerate(X_whole):
-          distances = euclidean_distances([x], X_all)
-          min_distance_whole = np.min(distances)
-          min_distances_whole.append((i, min_distance_whole))
-
-      best_idx, best_min_distance = max(min_distances_whole, key=lambda x: x[1])
-      distance_differences_whole.append(best_min_distance)
-      X_all = np.vstack([X_all, X_whole[best_idx]])
-      mask = np.ones(len(X_whole), dtype=bool)
-      mask[best_idx] = False
-      X_whole = X_whole[mask]
-
-
     while len(X_unlabeled) > 0:
 
       if len(X_initial) == 0:
         mean_point = np.mean(X_unlabeled, axis=0)
         initial_idx = np.argmin(np.linalg.norm(X_unlabeled - mean_point, axis=1))
-
-        selected_indices = [initial_idx]
+        selected_indices.append(initial_idx)
+        selected_index = [initial_idx]
         X_initial = [X_unlabeled[initial_idx]]
 
         mask = np.ones(len(X_unlabeled), dtype=bool)
@@ -209,7 +156,7 @@ def initialization_minimum(X_unlabeled, X_initial=None):
         X_unlabeled = X_unlabeled[mask]
 
       else:
-        selected_indices = []
+        selected_index = []
 
       min_distances = []
       for i, x in enumerate(X_unlabeled):
@@ -221,8 +168,8 @@ def initialization_minimum(X_unlabeled, X_initial=None):
 
       distance_differences.append(best_min_distance)
       iteration += 1
-
       selected_indices.append(best_idx)
+      selected_index.append(best_idx)
       X_initial = np.vstack([X_initial, X_unlabeled[best_idx]])
       mask = np.ones(len(X_unlabeled), dtype=bool)
       mask[best_idx] = False
@@ -233,27 +180,10 @@ def initialization_minimum(X_unlabeled, X_initial=None):
     elbow_iteration = elbow_finder.knee
     elbow_point = distance_differences[elbow_iteration - 1] if elbow_iteration is not None else None
 
-    plt.figure(figsize=(10, 6))
-
-    if initial_distances:
-        plt.plot(range(1, len(initial_distances) + 1), initial_distances, marker='o', linestyle='--', color='orange', label="Initial X Distance")
-
-    plt.plot(range(1, len(distance_differences) + 1), distance_differences, marker='o', linestyle='-', color='b', label="Distance")
-    plt.plot(range(1, len(distance_differences_whole) + 1), distance_differences_whole, marker='o', linestyle='-', color='green', label="All Distance")
-
     if elbow_iteration is not None:
-        plt.scatter(elbow_iteration, elbow_point, color='red', s=100, label="Elbow Point", zorder=3)
-        print(f"Elbow Point found at iteration {elbow_iteration}, value: {elbow_point}")
-    else:
-        print("No clear Elbow Point detected.")
+        selected_indices = selected_indices[:elbow_iteration]
 
-    plt.title("Distance Curve")
-    plt.xlabel("Iteration")
-    plt.ylabel("Maximum Minimum distance")
-    plt.grid(alpha=0.3)
-    plt.show()
-
-    return distance_differences, elbow_iteration, elbow_point
+    return distance_differences, elbow_iteration, elbow_point, selected_indices
 
 # ------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------
@@ -392,6 +322,7 @@ def initialization_mean(X_unlabeled, X_initial=None):
     """
 
     distance_differences = []
+    selected_indices = []
 
     if X_initial is None or len(X_initial) == 0:
         X_initial = []
@@ -402,13 +333,11 @@ def initialization_mean(X_unlabeled, X_initial=None):
         if len(X_initial) == 0:
             mean_point = np.mean(X_unlabeled, axis=0)
             initial_idx = np.argmin(np.linalg.norm(X_unlabeled - mean_point, axis=1))
-            selected_indices = [initial_idx]
+            selected_indices.append(initial_idx)
             X_initial = [X_unlabeled[initial_idx]]
             mask = np.ones(len(X_unlabeled), dtype=bool)
             mask[initial_idx] = False
             X_unlabeled = X_unlabeled[mask]
-        else:
-            selected_indices = []
 
         avg_distances = []
         for i, x in enumerate(X_unlabeled):
@@ -421,35 +350,20 @@ def initialization_mean(X_unlabeled, X_initial=None):
 
         iteration += 1
 
-        print(f"For iteration {iteration}, best average distance: {best_avg_distance}")
-
         selected_indices.append(best_idx)
         X_initial = np.vstack([X_initial, X_unlabeled[best_idx]])
         mask = np.ones(len(X_unlabeled), dtype=bool)
         mask[best_idx] = False
         X_unlabeled = X_unlabeled[mask]
 
-        print(f"Len X_initial: {len(X_initial)}")
-        print(f"Len X_unlabeled: {len(X_unlabeled)}")
-
-        print("\n")
 
     elbow_finder = KneeLocator(range(1, len(distance_differences) + 1), distance_differences, curve="convex", direction="decreasing")
     elbow_iteration = elbow_finder.knee
     elbow_point = distance_differences[elbow_iteration - 1] if elbow_iteration is not None else None
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(range(1, len(distance_differences) + 1), distance_differences, marker='o', linestyle='-', color='b', label="Distance")
-
     if elbow_iteration is not None:
-        plt.scatter(elbow_iteration, elbow_point, color='red', s=100, label="Elbow Point", zorder=3)
-        print(f"Elbow Point found at iteration {elbow_iteration}, value: {elbow_point}")
-    else:
-        print("No clear Elbow Point detected.")
-    plt.title("Distance Curve")
-    plt.xlabel("Iteration")
-    plt.ylabel("Maximum mean distance")
-    plt.grid(alpha=0.3)
-    plt.show()
+        selected_indices = selected_indices[:elbow_iteration]
 
-    return distance_differences, elbow_iteration, elbow_point
+    return distance_differences, elbow_iteration, elbow_point, selected_indices
+
+

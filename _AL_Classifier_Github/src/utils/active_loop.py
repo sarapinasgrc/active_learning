@@ -23,7 +23,7 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
             kernel (str): Kernel to use in model
 
         Returns:
-            results (dict): Dictionary with accuracy and AUC
+            results (dict): Dictionary with accuracy and AUC for learning curve creation
     
     """
 
@@ -33,7 +33,7 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
     auc_list = []
     iteration = 0
     mu, ou, mee,  = False, False, False
-    point_mu, point_ou, point_mee, point_change = -1, -1, -1, -1
+    point_mu, point_ou, point_mee = -1, -1, -1
 
     while len(X_pool) > 0:
 
@@ -82,6 +82,9 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
                   point_mee = iteration
 
         if al == 'coreset':
+          """
+          Active learning strategy that selects the next sample based on the Entropy + Euclidean Distance.
+          """
           entropies = entropy(probs, axis=1)
           dists = euclidean_distances(X_pool, X_labeled)
           scaled_dists = dists * entropies.reshape(-1, 1) 
@@ -89,24 +92,39 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
           next_idx = np.argmax(min_scaled_dist)
 
         elif al == 'leastconfident':
+          """
+          Active learning strategy that selects the next sample based on the least confident prediction.
+          """
           max_confidences = np.max(probs, axis=1)
           next_idx = np.argmin(max_confidences)
 
         elif al == 'marginsampling':
+          """
+          Active learning strategy that selects the next sample based on the margin between the two highest predicted probabilities.
+          """
           sorted_probs = np.sort(probs, axis=1)
           margins = sorted_probs[:, -1] - sorted_probs[:, -2]
           next_idx = np.argmin(margins)
 
         elif al == 'entropy':
+          """
+          Active learning strategy that selects the next sample based on the entropy of the predicted probabilities.
+          """
           entropies = entropy(probs, axis=1)
           next_idx = np.argmax(entropies)
 
         elif al == 'variance':
+          """
+          Active learning strategy that selects the next sample based on the variance of the predicted probabilities.
+          """
           y_proba_unlabeled = model.predict_proba(X_pool)
           variance_unlabeled = np.var(y_proba_unlabeled, axis=1)
           next_idx = np.argmax(variance_unlabeled)
 
         elif al == 'uncertainty_distance':
+          """
+          Active learning strategy that selects the next sample based on Least Confident + Euclidean distance.
+          """
           uncertainties = 1 - np.max(probs, axis=1)
           dists = euclidean_distances(X_pool, X_labeled)
           scaled_dists = dists * uncertainties.reshape(-1, 1)
@@ -114,6 +132,9 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
           next_idx = np.argmax(min_scaled_dist)
 
         elif al == 'support':
+            """
+            Active learning strategy that selects the next sample based on the unlabeled support vectors of the TSVM model.
+            """
             if isinstance(model, (TSVM, MultiClassTSVM)):
                 support_vectors = model.support_vectors_
                 support_indices = [
@@ -125,6 +146,7 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
                     next_idx = support_indices[0]
 
                 else:
+                    # If no unlabeled support vectors found, use a fallback strategy, for this case Entropy + Euclidean distance
                     entropies = entropy(probs, axis=1)
                     dists = pairwise_distances(X_pool, X_labeled, metric="euclidean")
                     scaled_dists = dists * entropies[:, None]
@@ -143,5 +165,8 @@ def al_loop(X_labeled, y_labeled, X_pool, y_pool, X_test, y_test, model, al='cor
     results = {
         "accuracy_list": accuracy_list,
         "auc_list": auc_list,
+        "point_mu": point_mu,
+        "point_ou": point_ou,
+        "point_mee": point_mee,
     }
     return results
