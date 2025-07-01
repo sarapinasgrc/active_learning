@@ -6,11 +6,12 @@ from src.main import active_leaning_direct
 from src.utils.preprocessing import preprocess_results
 import matplotlib.pyplot as plt
 
-file_path = "C:/Users/sarap/OneDrive/Documentos/DataScience/_TFG/Active Learning/LASSL/arcene_df.xlsx"
-arcene_df = pd.read_excel(file_path, sheet_name="Sheet1")
+file_path = "path"
+dataset = pd.read_excel(file_path, sheet_name="Sheet1")
 
-X = arcene_df.drop(columns=["label"]).values
-Y = arcene_df["label"].values
+X = dataset.drop(columns=["label"]).values
+Y = dataset["label"].values
+
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=42, stratify=Y)
 
 # ---- INITIALIZATION ----
