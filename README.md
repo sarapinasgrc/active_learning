@@ -2,27 +2,28 @@
 
 ---
 ## 📂 Repository Structure 
-📁 data/
 
-│── binary_data.xlsx                 # Generated binary dataset
+│──📁 data/
 
-│── multiclass_data.xlsx             # Generated multiclass dataset
+│   │── binary_data.xlsx                 # Generated binary dataset
 
-📁 src/
+│   │── multiclass_data.xlsx             # Generated multiclass dataset
 
-│── 📁 utils/
+│──📁 src/
 
-│   │── active_loop.py               # Main Active Learning loop
+│   │── 📁 utils/
 
-│   │── initialization.py            # Initialization methods
+│       │── active_loop.py               # Main Active Learning loop
 
-│   │── models.py                    # Classification models
+│       │── initialization.py            # Initialization methods
 
-│   │── preprocessing.py             # Data preprocessing
+│       │── models.py                    # Classification models
 
-│   │── selection.py                 # Data selection strategies
+│       │── preprocessing.py             # Data preprocessing
 
-│   │── stopping_criteria.py         # Stopping criteria strategies
+│       │── selection.py                 # Data selection strategies that are integrated into the active learning loop for initial selection within the loop in main.py
+
+│       │── stopping_criteria.py         # Stopping criteria strategies
 
 │   │── main.py                      # Active Learning execution
 
