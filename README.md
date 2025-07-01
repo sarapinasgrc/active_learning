@@ -66,3 +66,8 @@ Original repository: [https://github.com/YGZWQZD/LAMDA-SSL](https://github.com/Y
 - **Gaussian Process Classifier**
 - **Logistic Regression Classifier**
 - **Random Forest**
+
+### Stopping Criteria 🛑
+- **Maximum Uncertainty**: Given a threshold, training of model stops when the most uncertain sample is below that threshold.
+- **Overall Uncertainty**: Given a threshold, training of model stops when theaverage of unceratinty os samples is below that threshold.
+- **Maximum Expected Error**: Given a threshold, training of model stops when the prediction error of the model is lower than that threshold.
