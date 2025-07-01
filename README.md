@@ -4,8 +4,6 @@
 ## 📂 Repository Structure 
 📁 data/
 
-│── arcene_df.xlsx                   # Original MALDI-TOF (Arcene) dataset
-
 │── binary_data.xlsx                 # Generated binary dataset
 
 │── multiclass_data.xlsx             # Generated multiclass dataset
